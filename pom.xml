@@ -1,80 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.6.4</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
-	<groupId>com.JforexRestful</groupId>
-	<artifactId>restful</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>restful</name>
-	<description>Demo project for Spring Boot</description>
-	<repositories>
-		<repository>
-			<id>dc_public</id>
-			<name>Dukascopy public repository</name>
-			<url>https://www.dukascopy.com/client/jforexlib/publicrepo/</url>
-		</repository>
-
-	</repositories>
-	<properties>
-		<java.version>11</java.version>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.6.4</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.JforexRestful</groupId>
+    <artifactId>restful</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>restful</name>
+    <description>A RestFul implementation of JforexAPIs via SpringBoot</description>
+    <repositories>
+        <repository>
+            <id>dc_public</id>
+            <name>Dukascopy public repository</name>
+            <url>https://www.dukascopy.com/client/jforexlib/publicrepo/</url>
+        </repository>
+    </repositories>
+    <properties>
+        <java.version>11</java.version>
         <com.dukascopy.api.version>2.13.98</com.dukascopy.api.version>
         <com.dukascopy.jclient.version>3.6.37</com.dukascopy.jclient.version>
-	</properties>
-	<dependencies>
+    </properties>
+    <dependencies>
         <dependency>
-			<groupId>com.dukascopy.dds2</groupId>
-			<artifactId>DDS2-jClient-JForex</artifactId>
-			<!-- find the latest available version here:
-				http://www.dukascopy.com/client/jforexlib/publicrepo/com/dukascopy/dds2/DDS2-jClient-JForex/
-			-->
-        <version>${com.dukascopy.jclient.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.dukascopy.api</groupId>
-			<artifactId>JForex-API</artifactId>
-			<!-- find the latest available version here:
+            <groupId>com.dukascopy.dds2</groupId>
+            <artifactId>DDS2-jClient-JForex</artifactId>
+            <!-- find the latest available version here:
+                http://www.dukascopy.com/client/jforexlib/publicrepo/com/dukascopy/dds2/DDS2-jClient-JForex/
+            -->
+            <version>${com.dukascopy.jclient.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.dukascopy.api</groupId>
+            <artifactId>JForex-API</artifactId>
+            <!-- find the latest available version here:
                 http://www.dukascopy.com/client/jforexlib/publicrepo/com/dukascopy/api/JForex-API/
             -->
             <version>${com.dukascopy.api.version}</version>
-			<classifier>sources</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-reload4j</artifactId>
-				</exclusion>
+            <classifier>sources</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
                 <exclusion>
-					<groupId>ch.qos.logback</groupId>
-					<artifactId>logback-classic</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-
-		</plugins>
-	</build>
-
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-reload4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>
