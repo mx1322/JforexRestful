@@ -7,6 +7,7 @@ import com.dukascopy.api.system.IClient;
 import com.dukascopy.api.system.ISystemListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Component
-public class CoreService implements Runnable {
+public class CoreService implements ApplicationRunner  {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreService.class);
 
@@ -47,26 +48,29 @@ public class CoreService implements Runnable {
     }
 
     @Override
-    public void run() {
+    public void run(ApplicationArguments args) {
         LOGGER.info("Starting strategy");
         try {
             AccountInfoStrategy strategy = new AccountInfoStrategy();
             client.startStrategy(strategy);
 
-            //wait for the strategy to start
+            // wait for the strategy to start
             while (client.getStartedStrategies().size() == 0) {
                 Thread.sleep(1000);
             }
 
-            //get the instance of the strategy
+            // get the instance of the strategy
             while (strategy.getContext() == null || strategy.getAccount() == null) {
                 LOGGER.info("Waiting for strategy to initialize...");
                 Thread.sleep(1000);
             }
 
-            //access the variables from the strategy
+            // access the variables from the strategy
             IContext context = strategy.getContext();
             IAccount account = strategy.getAccount();
+
+            // Set the account instance in CoreService
+            CoreService.account = account;
 
             LOGGER.info("=============Main============ Account ID: " + account.getAccountId());
 
@@ -75,6 +79,11 @@ public class CoreService implements Runnable {
         } catch (Exception e) {
             LOGGER.error("An error occurred while running the strategy", e);
         }
+    }
+
+
+    public IAccount getAccount() {
+        return account;
     }
 
     private static void setSystemListener() {

@@ -19,6 +19,7 @@
 			<name>Dukascopy public repository</name>
 			<url>https://www.dukascopy.com/client/jforexlib/publicrepo/</url>
 		</repository>
+
 	</repositories>
 	<properties>
 		<java.version>11</java.version>
@@ -72,6 +73,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+
 		</plugins>
 	</build>
 
