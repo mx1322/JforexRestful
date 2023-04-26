@@ -28,41 +28,12 @@ jobs:
           cache: 'maven'
       - name: Build with Maven
         run: mvn -B package --file pom.xml
-
-      - name: Install GitHub CLI
-        run: |
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
-          sudo apt-add-repository https://cli.github.com/packages
-          sudo apt-get update
-          sudo apt-get install gh
-
-      - name: Get latest release tag and increment
-        id: get_version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "gh_version=$(gh release list --repo $GITHUB_REPOSITORY | head -n 1 | awk '{print $2}' | awk -F. '{$NF = $NF + 1} 1' OFS=. )" >> $GITHUB_ENV
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: upload Jar
+        uses: actions/upload-artifact@v3
         with:
-          tag_name: ${{ env.gh_version }}
-          release_name: Release ${{ env.gh_version }}
-          draft: false
-          prerelease: false
-
-      - name: Upload JAR as a Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: target/JforexRestful.jar # Replace this with the path to your JAR file
-          asset_name: JforexRestful.jar
-          asset_content_type: application/java-archive
+          name: JforexRestful
+          path: target/*.jar
 
       # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
       - name: Update dependency graph
