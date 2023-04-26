@@ -2,6 +2,10 @@ name: Release Artifacts
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (optional)'
+        required: false
 
 jobs:
   release:
@@ -15,34 +19,38 @@ jobs:
 
       - name: Install GitHub CLI
         run: |
-          curl -sSL https://github.com/cli/cli/releases/download/v2.4.0/gh_2.4.0_linux_amd64.tar.gz -o gh.tar.gz
-          tar xzf gh.tar.gz
-          sudo mv gh_2.4.0_linux_amd64/bin/gh /usr/local/bin/
+          curl -sSL https://github.com/cli/cli/releases/download/v2.4.0/gh_2.4.0_linux_amd64.tar.gz | sudo tar xz -C /usr/local/bin --strip-components 1 gh_2.4.0_linux_amd64/bin/gh
 
-      - name: Get latest release tag and increment
-        id: get_version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set custom version (if provided)
+        id: custom_version
         run: |
-          echo "gh_version=$(gh release list --repo $GITHUB_REPOSITORY | head -n 1 | awk '{print $2}' | awk -F. '{$NF = $NF + 1} 1' OFS=. )" >> $GITHUB_ENV
+          CUSTOM_VERSION="${{ github.event.inputs.version }}"
+          echo "Custom version: $CUSTOM_VERSION"
+          echo "CUSTOM_VERSION=$CUSTOM_VERSION" >> $GITHUB_ENV
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.gh_version }}
-          release_name: Release ${{ env.gh_version }}
-          draft: false
-          prerelease: false
+      - name: Fetch latest release version and increment
+        id: version
+        run: |
+          LATEST_VERSION=$(gh release list --repo ${{ github.repository }} --limit 1 | awk '{print $1}')
+          echo "Latest version: $LATEST_VERSION"
 
-      - name: Upload Artifacts to Release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: artifacts/*.jar
-          asset_name: JforexRestful.jar
-          tag: ${{ env.gh_version }}
-          overwrite: true
-          file_glob: true
+          if [[ -n "${CUSTOM_VERSION}" && "${CUSTOM_VERSION}" > "${LATEST_VERSION}" ]]; then
+            NEW_VERSION=${CUSTOM_VERSION}
+          else
+            if [[ -z "${LATEST_VERSION}" ]]; then
+              NEW_VERSION="v1.0.0"
+            else
+              NEW_VERSION="v$(echo $LATEST_VERSION | cut -c 2- | awk -F. '{print $1"."$2"."$3 + 1}')"
+            fi
+          fi
+
+          echo "New version: $NEW_VERSION"
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Create and publish release
+        run: |
+          gh release create $NEW_VERSION --title "Release $NEW_VERSION" --notes "Auto-generated release" --repo ${{ github.repository }} --target main
+
+      - name: Upload JAR as a Release Asset
+        run: |
+          gh release upload $NEW_VERSION artifacts/JforexRestful.jar --c "application/java-archive" --repo ${{ github.repository }}
