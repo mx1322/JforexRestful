@@ -7,18 +7,11 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
         with:
-          java-version: '11'
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml
+          name: JforexRestful
+          path: artifacts
 
       - name: Install GitHub CLI
         run: |
@@ -48,7 +41,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/*.jar
+          file: artifacts/*.jar
           asset_name: JforexRestful.jar
           tag: ${{ env.gh_version }}
           overwrite: true
