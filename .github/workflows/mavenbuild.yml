@@ -28,12 +28,20 @@ jobs:
           cache: 'maven'
       - name: Build with Maven
         run: mvn -B package --file pom.xml
-        
-      - name: upload Jar
-        uses: actions/upload-artifact@v3
-        with:
-          name: JforexRestful
-          path: target/*.jar
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
+          sudo apt-add-repository https://cli.github.com/packages
+          sudo apt-get update
+          sudo apt-get install gh
+
+      - name: Get latest release tag and increment
+        id: get_version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "gh_version=$(gh release list --repo $GITHUB_REPOSITORY | head -n 1 | awk '{print $2}' | awk -F. '{$NF = $NF + 1} 1' OFS=. )" >> $GITHUB_ENV
 
       - name: Create Release
         id: create_release
@@ -41,8 +49,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v1.0.0 # Replace this with your release tag name
-          release_name: Release v1.0.0 # Replace this with your release name
+          tag_name: ${{ env.gh_version }}
+          release_name: Release ${{ env.gh_version }}
           draft: false
           prerelease: false
 
