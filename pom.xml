@@ -9,8 +9,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.JforexRestful</groupId>
-    <artifactId>restful</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>JforexRestful</artifactId>
+    <version>1.0.0</version>
     <name>restful</name>
     <description>A RestFul implementation of JforexAPIs via SpringBoot</description>
     <repositories>
