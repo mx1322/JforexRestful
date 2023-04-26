@@ -21,7 +21,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           LATEST_ARTIFACT_URL=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/build.yml/artifacts" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/mavenbuild.yml/artifacts" \
             | jq -r '.artifacts[0].archive_download_url')
           echo "LATEST_ARTIFACT_URL=$LATEST_ARTIFACT_URL" >> $GITHUB_ENV
 
