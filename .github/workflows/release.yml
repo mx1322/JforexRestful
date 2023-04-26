@@ -4,53 +4,53 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version (optional)'
+        description: 'Release version'
         required: false
+        default: ''
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Download Artifacts
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Download artifact
         uses: actions/download-artifact@v2
         with:
           name: JforexRestful
           path: artifacts
 
-      - name: Install GitHub CLI
-        run: |
-          curl -sSL https://github.com/cli/cli/releases/download/v2.4.0/gh_2.4.0_linux_amd64.tar.gz | sudo tar xz -C /usr/local/bin --strip-components 1 gh_2.4.0_linux_amd64/bin/gh
+      - name: Rename artifact
+        run: mv artifacts/*.jar artifacts/JforexRestful.jar
 
-      - name: Set custom version (if provided)
-        id: custom_version
+      - name: Get release version
+        id: get_version
         run: |
-          CUSTOM_VERSION="${{ github.event.inputs.version }}"
-          echo "Custom version: $CUSTOM_VERSION"
-          echo "CUSTOM_VERSION=$CUSTOM_VERSION" >> $GITHUB_ENV
-
-      - name: Fetch latest release version and increment
-        id: version
-        run: |
-          LATEST_VERSION=$(gh release list --repo ${{ github.repository }} --limit 1 | awk '{print $1}')
-          echo "Latest version: $LATEST_VERSION"
-
-          if [[ -n "${CUSTOM_VERSION}" && "${CUSTOM_VERSION}" > "${LATEST_VERSION}" ]]; then
-            NEW_VERSION=${CUSTOM_VERSION}
+          if [ -z "${{ github.event.inputs.version }}" ]; then
+            VERSION=$(curl --silent "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r .tag_name | awk -F. '{$NF+=1;OFS=".";print}')
           else
-            if [[ -z "${LATEST_VERSION}" ]]; then
-              NEW_VERSION="v1.0.0"
-            else
-              NEW_VERSION="v$(echo $LATEST_VERSION | cut -c 2- | awk -F. '{print $1"."$2"."$3 + 1}')"
-            fi
+            VERSION=${{ github.event.inputs.version }}
           fi
+          echo "::set-output name=version::${VERSION}"
 
-          echo "New version: $NEW_VERSION"
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-
-      - name: Create and publish release
-        run: |
-          gh release create $NEW_VERSION --title "Release $NEW_VERSION" --notes "Auto-generated release" --repo ${{ github.repository }} --target main
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          release_name: Release ${{ steps.get_version.outputs.version }}
+          draft: false
+          prerelease: false
 
       - name: Upload JAR as a Release Asset
-        run: |
-          gh release upload $NEW_VERSION artifacts/JforexRestful.jar --c "application/java-archive" --repo ${{ github.repository }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/JforexRestful.jar
+          asset_name: JforexRestful.jar
+          asset_content_type: application/java-archive
