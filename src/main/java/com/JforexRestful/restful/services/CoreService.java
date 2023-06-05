@@ -121,7 +121,7 @@ public class CoreService implements ApplicationRunner  {
     }
 
     private static void tryToConnect(Config config) throws Exception {
-        LOGGER.info("Connecting...");
+        LOGGER.info("Connecting with user "+config.getUserName());
         //connect to the server using jnlp, username and password
         client.connect(config.getJnlpUrl(), config.getUserName(), config.getPassword());
 
@@ -189,17 +189,15 @@ public class CoreService implements ApplicationRunner  {
 
         @Override
         public void onTick(Instrument instrument, ITick tick) throws JFException {
-            LOGGER.info("Got a new ticket...");
+            //LOGGER.info("Got a new ticket...");
         }
 
         @Override
         public void onBar(Instrument instrument, Period period, IBar askBar, IBar bidBar) throws JFException {
-
         }
 
         @Override
         public void onMessage(IMessage message) throws JFException {
-
         }
 
         @Override

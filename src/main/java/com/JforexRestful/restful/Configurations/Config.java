@@ -1,18 +1,21 @@
 package com.JforexRestful.restful.Configurations;
 
-import java.io.FileInputStream;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
 public class Config {
-    private static final String PROPERTIES_FILE = "src/main/resources/application.properties";
+    private static final String PROPERTIES_FILE = "application.properties";
     private Properties properties;
 
     public Config() {
-        System.out.println("Current working directory: " + System.getProperty("user.dir"));
         this.properties = new Properties();
-        try (InputStream input = new FileInputStream(PROPERTIES_FILE)) {
+        try {
+            Resource resource = new ClassPathResource(PROPERTIES_FILE);
+            InputStream input = resource.getInputStream();
             if (input == null) {
                 System.err.println("Failed to find " + PROPERTIES_FILE + " on the classpath");
                 System.exit(1);
@@ -45,12 +48,7 @@ public class Config {
     }
 
     public static void main(String[] args) {
-        System.out.println("Current working directory: " + System.getProperty("user.dir"));
-        System.out.println(PROPERTIES_FILE);
         Config config = new Config();
-        System.out.println("jnlpUrl: " + config.getJnlpUrl());
-        System.out.println("username: " + config.getUserName());
-        System.out.println("password: " + config.getPassword());
         config.printProperties();
     }
 }

@@ -34,18 +34,6 @@ public class AccountService implements Runnable {
         }
     }
 
-   /* public static void main(String[] args) {
-        AccountService accountService = new AccountService();
-        Thread accountServiceThread = new Thread(accountService);
-        accountServiceThread.start();
-
-        try {
-            accountServiceThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }*/
-
     // Account class to store account information
     public static class Account {
         private String accountId;
