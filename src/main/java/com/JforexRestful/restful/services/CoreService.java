@@ -18,7 +18,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Component
-public class CoreService implements ApplicationRunner {
+public class CoreService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreService.class);
 
@@ -31,7 +31,6 @@ public class CoreService implements ApplicationRunner {
     @Autowired
     private Config config;
 
-    @PostConstruct
     public void start() {
         try {
             LOGGER.info("Starting Dukascopy connection...");
@@ -55,8 +54,7 @@ public class CoreService implements ApplicationRunner {
         }
     }
 
-    @Override
-    public void run(ApplicationArguments args) {
+    private void startStrategy() {
         LOGGER.info("Starting strategy");
         try {
             AccountInfoStrategy strategy = new AccountInfoStrategy();
@@ -106,7 +104,8 @@ public class CoreService implements ApplicationRunner {
     public void updateConfig(String userName, String password) {
         config.setUserName(userName);
         config.setPassword(password);
-        tryToReconnect();
+        start();
+        startStrategy();
     }
 
     private void setSystemListener() {

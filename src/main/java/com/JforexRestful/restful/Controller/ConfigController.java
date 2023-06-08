@@ -7,18 +7,17 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/config")
 public class ConfigController {
-    @Autowired
-    CoreService coreService;
 
-    @PutMapping("/updateCredentials")
-    public String updateCredentials(@RequestParam String username, @RequestParam String password) {
+    @Autowired
+    private CoreService coreService;
+
+    @PostMapping("/update")
+    public String updateConfig(@RequestParam String userName, @RequestParam String password) {
         try {
-            coreService.updateConfig(username, password);
-            return "Credentials updated successfully!";
+            coreService.updateConfig(userName, password);
+            return "Configuration updated successfully and service started.";
         } catch (Exception e) {
-            return "An error occurred while updating the credentials: " + e.getMessage();
+            return "Failed to update configuration and start service: " + e.getMessage();
         }
     }
 }
-
-

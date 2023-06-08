@@ -8,10 +8,8 @@ public class Config {
     @Value("${jnlpUrl}")
     private String jnlpUrl;
 
-    @Value("${JforexUser}")
     private String userName;
 
-    @Value("${password}")
     private String password;
 
     public String getJnlpUrl() {
