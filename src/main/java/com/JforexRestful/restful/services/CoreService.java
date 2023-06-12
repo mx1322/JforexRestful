@@ -2,17 +2,15 @@ package com.JforexRestful.restful.Services;
 
 import com.JforexRestful.restful.Configurations.Config;
 import com.dukascopy.api.*;
+import com.dukascopy.api.indicators.IIndicator;
 import com.dukascopy.api.system.ClientFactory;
 import com.dukascopy.api.system.IClient;
 import com.dukascopy.api.system.ISystemListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,14 +25,17 @@ public class CoreService {
     private IEngine engine;
     private IContext context;
     private IAccount account;
-
+    private IIndicators indicators;
     @Autowired
     private Config config;
+
+    public CoreService() {
+    }
 
     public void start() {
         try {
             LOGGER.info("Starting Dukascopy connection...");
-            client = ClientFactory.getDefaultInstance();
+            client = client == null ? ClientFactory.getDefaultInstance() : client;
             setSystemListener();
             tryToConnect();
             subscribeToInstruments();
@@ -46,18 +47,22 @@ public class CoreService {
     }
 
     @PreDestroy
-    public void stop() throws Exception {
-        if (client != null && client.isConnected()) {
-            LOGGER.info("Stopping Dukascopy connection...");
-            client.disconnect();
-            LOGGER.info("Dukascopy connection stopped successfully");
+    public void stop() {
+        try {
+            if (client != null && client.isConnected()) {
+                LOGGER.info("Stopping Dukascopy connection...");
+                client.disconnect();
+                LOGGER.info("Dukascopy connection stopped successfully");
+            }
+        } catch (Exception e) {
+            LOGGER.error("Failed to stop Dukascopy connection: " + e.getMessage());
         }
     }
 
     private void startStrategy() {
         LOGGER.info("Starting strategy");
         try {
-            AccountInfoStrategy strategy = new AccountInfoStrategy();
+            BarboneStrategy strategy = new BarboneStrategy();
             client.startStrategy(strategy);
 
             // wait for the strategy to start
@@ -74,10 +79,9 @@ public class CoreService {
             // access the variables from the strategy
             context = strategy.getContext();
             account = strategy.getAccount();
+            indicators = strategy.getIndicators(); // initialize the indicators field
 
             LOGGER.info("=============Main============ Account ID: " + account.getAccountId());
-
-            strategy.setEngine(context.getEngine());
 
         } catch (Exception e) {
             LOGGER.error("An error occurred while running the strategy", e);
@@ -100,12 +104,19 @@ public class CoreService {
         return account;
     }
 
+    public IIndicators getIndicators(){
+        return indicators;
+    }
 
     public void updateConfig(String userName, String password) {
-        config.setUserName(userName);
-        config.setPassword(password);
-        start();
-        startStrategy();
+        try {
+            config.setUserName(userName);
+            config.setPassword(password);
+            start();
+            startStrategy();
+        } catch (Exception e) {
+            LOGGER.error("Failed to update config: " + e.getMessage());
+        }
     }
 
     private void setSystemListener() {
@@ -135,6 +146,10 @@ public class CoreService {
 
     private void tryToConnect() throws Exception {
         LOGGER.info("Connecting with user " + config.getUserName());
+
+        if (client == null) {
+            throw new NullPointerException("Client is null");
+        }
         client.connect(config.getJnlpUrl(), config.getUserName(), config.getPassword());
 
         // wait for it to connect
@@ -145,9 +160,7 @@ public class CoreService {
         }
 
         if (!client.isConnected()) {
-            String errorMessage = "Failed to connect to Dukascopy servers";
-            LOGGER.error(errorMessage);
-            throw new Exception(errorMessage);
+            throw new Exception("Failed to connect to Dukascopy server");
         }
     }
 
@@ -187,17 +200,19 @@ public class CoreService {
     }
 
 
-    private static class AccountInfoStrategy implements IStrategy {
+    private static class BarboneStrategy implements IStrategy {
         private IEngine engine;
         private IConsole console;
         private IContext context;
         private IAccount account;
+        private IIndicators indicators;
 
         @Override
         public void onStart(IContext context) throws JFException {
             this.engine = context.getEngine();
             this.console = context.getConsole();
             this.context = context;
+            this.indicators = context.getIndicators();
 
             // Use the engine, console, context fields here
         }
@@ -252,6 +267,10 @@ public class CoreService {
 
         public IAccount getAccount() {
             return account;
+        }
+
+        public IIndicators getIndicators() {
+            return indicators;
         }
 
         public void setAccount(IAccount account) {
