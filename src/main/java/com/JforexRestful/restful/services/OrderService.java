@@ -1,4 +1,4 @@
-package com.JforexRestful.restful.services;
+package com.JforexRestful.restful.Services;
 
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;

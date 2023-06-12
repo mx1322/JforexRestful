@@ -1,6 +1,6 @@
-package com.JforexRestful.restful.Controller;
+package com.JforexRestful.restful.Controllers;
 
-import com.JforexRestful.restful.services.CoreService;
+import com.JforexRestful.restful.Services.CoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

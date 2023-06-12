@@ -1,4 +1,4 @@
-package com.JforexRestful.restful.services;
+package com.JforexRestful.restful.Services;
 
 import com.dukascopy.api.IAccount;
 import org.springframework.beans.factory.annotation.Autowired;

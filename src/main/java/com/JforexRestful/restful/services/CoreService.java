@@ -1,4 +1,4 @@
-package com.JforexRestful.restful.services;
+package com.JforexRestful.restful.Services;
 
 import com.JforexRestful.restful.Configurations.Config;
 import com.dukascopy.api.*;

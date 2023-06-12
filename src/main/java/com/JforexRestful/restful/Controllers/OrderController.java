@@ -1,6 +1,6 @@
-package com.JforexRestful.restful.Controller;
+package com.JforexRestful.restful.Controllers;
 
-import com.JforexRestful.restful.services.OrderService;
+import com.JforexRestful.restful.Services.OrderService;
 import com.dukascopy.api.JFException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

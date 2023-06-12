@@ -1,0 +1,1 @@
+curl -X POST "http://localhost:8080/api/config/update" -d "userName=DEMO2wJcsq&password=wJcsq"
