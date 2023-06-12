@@ -8,15 +8,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/account")
+@RequestMapping("/api")
 public class AccountController {
 
     @Autowired
     private AccountService accountService;
 
-    @GetMapping("/AccountID")
+    @GetMapping("/AccountInfo")
     public Account getAccountInfo() {
-        System.out.println("Account ID: " + accountService.getAccountInfo());
-        return accountService.getAccountInfo();
+        Account account = accountService.getAccountInfo();
+        return account;
     }
 }
