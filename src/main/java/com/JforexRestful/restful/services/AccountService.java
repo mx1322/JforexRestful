@@ -15,19 +15,18 @@ public class AccountService implements Runnable {
 
         try {
             iAccount = coreService.getAccount();
+            String accountId = iAccount.getAccountId();
+            String accountCurrency = iAccount.getAccountCurrency().toString();
+            int leverage = (int) iAccount.getLeverage();
+            double usedMargin = iAccount.getUsedMargin();
+            double useOfLeverage = iAccount.getUseOfLeverage();
+
+            // Create and return the Account instance
+            return new Account(accountId, accountCurrency, leverage, usedMargin, useOfLeverage);
         } catch (NullPointerException e) {
             System.out.println("CoreService returned null Account. Please check the CoreService implementation.");
             return null;
         }
-
-        String accountId = iAccount.getAccountId();
-        String accountCurrency = iAccount.getAccountCurrency().toString();
-        int leverage = (int) iAccount.getLeverage();
-        double usedMargin = iAccount.getUsedMargin();
-        double useOfLeverage = iAccount.getUseOfLeverage();
-
-        // Create and return the Account instance
-        return new Account(accountId, accountCurrency, leverage, usedMargin, useOfLeverage);
     }
 
     @Override

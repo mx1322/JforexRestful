@@ -29,7 +29,12 @@ public class CoreService {
     @Autowired
     private Config config;
 
-    public CoreService() {
+    public void setContext(IContext context) {
+        this.context = context;
+    }
+
+    public void setEngine(IEngine engine) {
+        this.engine = engine;
     }
 
     public void start() {
@@ -62,7 +67,7 @@ public class CoreService {
     private void startStrategy() {
         LOGGER.info("Starting strategy");
         try {
-            BarboneStrategy strategy = new BarboneStrategy();
+            BarboneStrategy strategy = new BarboneStrategy(this);
             client.startStrategy(strategy);
 
             // wait for the strategy to start
@@ -206,6 +211,11 @@ public class CoreService {
         private IContext context;
         private IAccount account;
         private IIndicators indicators;
+        private CoreService coreService;
+
+        public BarboneStrategy(CoreService coreService) {
+            this.coreService = coreService; // set reference in constructor
+        }
 
         @Override
         public void onStart(IContext context) throws JFException {
@@ -214,7 +224,8 @@ public class CoreService {
             this.context = context;
             this.indicators = context.getIndicators();
 
-            // Use the engine, console, context fields here
+            coreService.setContext(this.context);
+            coreService.setEngine(this.engine);// Use the engine, console, context fields here
         }
 
         @Override
