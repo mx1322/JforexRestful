@@ -2,125 +2,98 @@ package com.JforexRestful.restful.Services;
 
 import com.dukascopy.api.*;
 import com.dukascopy.api.IIndicators.AppliedPrice;
+import com.dukascopy.api.feed.FeedDescriptor;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.JforexRestful.restful.Utils.FeedDescriptorUtils;
+
+import org.slf4j.Logger;
+
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Service
 public class IndicatorService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CoreService.class);
+
     @Autowired
     private CoreService coreService;
 
+    private FeedDescriptor feedDescriptor;
+
+    private IIndicators.AppliedPrice appliedPrice;
+
     public IndicatorService(CoreService coreService) {
         this.coreService = coreService;
+        try {
+            this.feedDescriptor = FeedDescriptorUtils.createDefaultFeedDescriptor();
+            this.appliedPrice = AppliedPrice.CLOSE;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public IndicatorResponse calculateSMA(Instrument instrument, Period period, int timePeriod, OfferSide side, AppliedPrice price, int shift) throws JFException {
+    private Object defaultIfNull(Object value, Object defaultValue) {
+        return value != null ? value : defaultValue;
+    }
+
+    private String createJsonResponse(double[] bbands) {
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonResponse = "";
+        try {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("Bollinger Bands", bbands);
+            jsonResponse = mapper.writeValueAsString(map);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jsonResponse;
+    }
+
+
+    public String calculateBollinger() throws JFException {
+        // Initializing parameters
+        Instrument instrument = Instrument.EURUSD;
+        Period period = Period.FIFTEEN_MINS;
+        OfferSide offerSide = OfferSide.BID;
+        AppliedPrice appliedPrice = AppliedPrice.CLOSE;
+        int timePeriod = 5;
+        int BBtimePeriod = 20;
+        double nbDevUp = 2.0;
+        double nbDevDn = 2.0;
+        IIndicators.MaType maType = IIndicators.MaType.SMA;
+        int shift = 0;
+
         IIndicators indicators = coreService.getIndicators();
         if (indicators == null) {
             throw new JFException("Failed to get indicators from context");
         }
 
-        // Check if the side, price, and shift parameters were provided by the user, if not, assign default values
-        if (side == null) {
-            side = OfferSide.BID; // default side
-        }
+        maType = (IIndicators.MaType) defaultIfNull(maType, IIndicators.MaType.SMA);
 
-        if (price == null) {
-            price = AppliedPrice.CLOSE; // default applied price
-        }
+        LOGGER.info("calculateBollinger is called with: appliedPrice={}, BBtimePeriod={}, nbDevUp={}, nbDevDn={}, maType={}, shift={}",
+                appliedPrice, BBtimePeriod, nbDevUp, nbDevDn, maType, shift);
 
-        if (shift < 0) {
-            shift = 0; // default shift
-        }
+        LOGGER.info("FeedDescriptor details: {}", feedDescriptor.toString());
 
-        double sma = indicators.sma(instrument, period, side, price, timePeriod, shift);
-        return new IndicatorResponse("SMA", instrument.name(), period.name(), timePeriod, side.name(), price.name(), shift, sma);
-    }
+        //double[] bollinger = indicators.bbands(feedDescriptor, appliedPrice, feedDescriptor.getOfferSide(), BBtimePeriod, nbDevUp, nbDevDn, maType).calculate(shift);
+        double[] bbands = indicators.bbands(
+                instrument, period, offerSide, appliedPrice,
+                timePeriod, nbDevUp, nbDevDn, maType,
+                shift);
 
-    public static class IndicatorResponse {
-        private String indicatorName;
-        private String instrument;
-        private String period;
-        private int timePeriod;
-        private String side;
-        private String price;
-        private int shift;
-        private double result;
+        LOGGER.info("calculateBollinger results: {}", bbands);
 
-        public IndicatorResponse(String indicatorName, String instrument, String period, int timePeriod, String side, String price, int shift, double result) {
-            this.indicatorName = indicatorName;
-            this.instrument = instrument;
-            this.period = period;
-            this.timePeriod = timePeriod;
-            this.side = side;
-            this.price = price;
-            this.shift = shift;
-            this.result = result;
-        }
+        double[] bbands1 = indicators.bbands(feedDescriptor, appliedPrice, offerSide, timePeriod, nbDevUp, nbDevDn, maType).calculate(shift);
 
-        public String getIndicatorName() {
-            return indicatorName;
-        }
+        LOGGER.info("calculateBollinger results1: {}", bbands1);
 
-        public void setIndicatorName(String indicatorName) {
-            this.indicatorName = indicatorName;
-        }
 
-        public String getInstrument() {
-            return instrument;
-        }
-
-        public void setInstrument(String instrument) {
-            this.instrument = instrument;
-        }
-
-        public String getPeriod() {
-            return period;
-        }
-
-        public void setPeriod(String period) {
-            this.period = period;
-        }
-
-        public int getTimePeriod() {
-            return timePeriod;
-        }
-
-        public void setTimePeriod(int timePeriod) {
-            this.timePeriod = timePeriod;
-        }
-
-        public String getSide() {
-            return side;
-        }
-
-        public void setSide(String side) {
-            this.side = side;
-        }
-
-        public String getPrice() {
-            return price;
-        }
-
-        public void setPrice(String price) {
-            this.price = price;
-        }
-
-        public int getShift() {
-            return shift;
-        }
-
-        public void setShift(int shift) {
-            this.shift = shift;
-        }
-
-        public double getResult() {
-            return result;
-        }
-
-        public void setResult(double result) {
-            this.result = result;
-        }
+        //return createJsonResponse(new Object[]{"Bollinger Bands", BBtimePeriod, maType.name(), shift, bollinger});
+        return (createJsonResponse(bbands));
     }
 }

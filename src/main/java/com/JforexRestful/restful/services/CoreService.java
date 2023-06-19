@@ -89,6 +89,7 @@ public class CoreService {
             LOGGER.info("=============Main============ Account ID: " + account.getAccountId());
 
         } catch (Exception e) {
+            LOGGER.info("An error occurred while running the strategy");
             LOGGER.error("An error occurred while running the strategy", e);
         }
     }
@@ -149,23 +150,45 @@ public class CoreService {
         });
     }
 
-    private void tryToConnect() throws Exception {
+    private void tryToConnect() {
         LOGGER.info("Connecting with user " + config.getUserName());
 
         if (client == null) {
+            LOGGER.debug("Client is null");
             throw new NullPointerException("Client is null");
         }
-        client.connect(config.getJnlpUrl(), config.getUserName(), config.getPassword());
+
+        try {
+            client.connect(config.getJnlpUrl(), config.getUserName(), config.getPassword());
+        } catch (JFException e) {
+            if (e.getMessage().contains("Account is expired")) {
+                LOGGER.info("Failed to connect to Dukascopy server: Account is expired");
+                LOGGER.debug("Failed to connect to Dukascopy server: " + e.getMessage(), e);
+                throw new RuntimeException("Failed to connect to Dukascopy server: Account is expired");
+            }
+            LOGGER.info("Failed to connect to Dukascopy server");
+            LOGGER.debug("Failed to connect to Dukascopy server: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to connect to Dukascopy server", e);
+        } catch (Exception e) {
+            LOGGER.info("Error occurred while connecting to Dukascopy server");
+            LOGGER.debug("Error occurred while connecting to Dukascopy server: " + e.getMessage(), e);
+            e.printStackTrace();
+        }
 
         // wait for it to connect
         int i = 10; // wait max ten seconds
         while (i > 0 && !client.isConnected()) {
-            Thread.sleep(1000);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                LOGGER.debug("Sleep was interrupted: " + e.getMessage(), e);
+            }
             i--;
         }
 
         if (!client.isConnected()) {
-            throw new Exception("Failed to connect to Dukascopy server");
+            LOGGER.info("Failed to connect to Dukascopy server");
+            throw new RuntimeException("Failed to connect to Dukascopy server");
         }
     }
 
@@ -180,7 +203,7 @@ public class CoreService {
                     try {
                         Thread.sleep(60 * 1000);
                     } catch (InterruptedException e) {
-                        LOGGER.error(e.getMessage(), e);
+                        LOGGER.debug(e.getMessage(), e);
                     }
                     if (client.isConnected()) {
                         break;
@@ -188,6 +211,8 @@ public class CoreService {
                     try {
                         client.connect(config.getJnlpUrl(), config.getUserName(), config.getPassword());
                     } catch (Exception e) {
+                        LOGGER.info("Error during reconnection");
+                        LOGGER.debug("Exception during reconnection", e);
                         throw new RuntimeException(e);
                     }
 

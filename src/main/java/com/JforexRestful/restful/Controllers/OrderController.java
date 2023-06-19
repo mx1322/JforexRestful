@@ -19,9 +19,8 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    @GetMapping("/open")
+    @GetMapping("/opening")
     public List<OrderService.Order> getOpenOrders() throws JFException {
-        orderService.toString();
         LOGGER.info("Client got order list with: "+orderService.getOpenOrders());
         return orderService.getOpenOrders();
     }
